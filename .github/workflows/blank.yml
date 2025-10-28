@@ -1,0 +1,21 @@
+# This is a basic workflow to help you get started with Actions
+
+NICEDAYTODAY/
+  frontend/      → Netlify (PWA with demo.wav + QR button)
+    index.html
+    style.css
+    app.js
+    manifest.webmanifest
+    netlify.toml
+    demo.wav
+    tracks.json        # seeded with bedtime8
+  backend/       → Render (FastAPI: /health, /qr)
+    main.py
+    requirements.txt
+    README_RENDER.md
+  worker/        → offline ripper (yt-dlp)
+    rip_crate.py
+    urls.txt
+    requirements.txt
+  postcards/     → (drop A6 PDFs & art here later)
+  README.md      → **Bible of Indexing** (below)
