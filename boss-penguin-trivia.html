@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>BOSS PENGUIN TRIVIA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- React/ReactDOM via CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(135deg, #fde6f5 0%, #d7c3f6 100%);
+        color: #5f236b;
+      }
+      .app-bg {
+        min-height: 100vh;
+        width: 100vw;
+      }
+      .splash-page, .home-container, .trivia-container, .collection-container, .reward-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 90vh;
+      }
+      .splash-page {
+        background: repeating-linear-gradient(130deg, #fdc9ef 0px, #f9c9fa 100px, #efe6fd 200px, #fdc9ef 300px);
+      }
+      .splash-msg {
+        font-size: 3rem;
+        padding: 1.5rem;
+        color: #d72660;
+        font-weight: bold;
+        background: #f3e6f2;
+        border-radius: 1rem;
+        border: 2px solid #d72660;
+        margin-bottom: 2rem;
+      }
+      .splash-btn, .home-btn, .continue-btn, .back-btn, .trivia-answer {
+        font-size: 1.2rem;
+        padding: 0.75rem 2rem;
+        margin: 0.5rem 0;
+        border-radius: 2rem;
+        border: 2px solid #ce84cf;
+        background: #fde6f5;
+        color: #714c8a;
+        cursor: pointer;
+        transition: background 0.3s, color 0.2s;
+        outline: none;
+      }
+      .splash-btn, .continue-btn {
+        font-size: 1.5rem;
+        background: #ce84cf;
+        color: white;
+      }
+      .splash-btn:hover, .continue-btn:hover, .home-btn:hover, .back-btn:hover {
+        background: #b054a2;
+        color: white;
+      }
+      .trivia-container {
+        max-width: 600px;
+        width: 96vw;
+        background: #fff7fc;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 2px 12px 0 #ce84cf85;
+      }
+      .trivia-q {
+        font-size: 1.7rem;
+        color: #5f236b;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+      .trivia-answers {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+      }
+      .trivia-answer {
+        font-size: 1.2rem;
+        border-radius: 2rem;
+        background: #fde6f5;
+        color: #714c8a;
+        border: 2px solid #ce84cf;
+        cursor: pointer;
+        padding: 1rem;
+        transition: background 0.2s;
+        width: 100%;
+      }
+      .trivia-answer.correct {
+        background: #c1f1d6;
+        border: 2px solid #66d078;
+      }
+      .trivia-answer.incorrect {
+        background: #fdc1cd;
+        border: 2px solid #d9587e;
+      }
+      .trivia-answer:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+      .penguin-count {
+        font-size: 1.5rem;
+        margin: 1rem 0;
+      }
+      .reward-img {
+        padding: 1rem;
+      }
+      .reward-msg {
+        font-size: 2rem;
+        color: #714c8a;
+        margin: 1rem 0;
+        font-weight: bold;
+      }
+      .penguins-row {
+        margin: 2rem 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // 100 General Knowledge Questions
+      const QUESTIONS = [
+        {question: "What is the capital of France?", answers: ["Berlin", "London", "Paris", "Madrid"], correct: 2},
+        {question: "Who wrote 'Romeo and Juliet'?", answers: ["Jane Austen", "Charles Dickens", "Mark Twain", "William Shakespeare"], correct: 3},
+        {question: "What year did the Titanic sink?", answers: ["1905", "1920", "1912", "1898"], correct: 2},
+        {question: "Largest planet in the Solar System?", answers: ["Mars", "Venus", "Jupiter", "Saturn"], correct: 2},
+        {question: "First President of the USA?", answers: ["Abraham Lincoln", "Thomas Jefferson", "John Adams", "George Washington"], correct: 3},
+        {question: "What element has the symbol O?", answers: ["Gold", "Osmium", "Oxygen", "Oxide"], correct: 2},
+        {question: "Fastest land animal?", answers: ["Lion", "Horse", "Tiger", "Cheetah"], correct: 3},
+        {question: "Which continent is Egypt in?", answers: ["Asia", "Europe", "South America", "Africa"], correct: 3},
+        {question: "Currency of Japan?", answers: ["Yuan", "Dollar", "Won", "Yen"], correct: 3},
+        {question: "Main ingredient in guacamole?", answers: ["Tomato", "Onion", "Lime", "Avocado"], correct: 3},
+        {question: "Longest river in the world?", answers: ["Amazon", "Yangtze", "Mississippi", "Nile"], correct: 3},
+        {question: "Third planet from the Sun?", answers: ["Venus", "Mars", "Mercury", "Earth"], correct: 3},
+        {question: "Smallest ocean on Earth?", answers: ["Indian", "Atlantic", "Southern", "Arctic"], correct: 3},
+        {question: "Inventor of the telephone?", answers: ["Edison", "Tesla", "Marconi", "Alexander Graham Bell"], correct: 3},
+        {question: "City for Eiffel Tower?", answers: ["London", "Rome", "Berlin", "Paris"], correct: 3},
+        {question: "Number of continents?", answers: ["5", "6", "8", "7"], correct: 3},
+        {question: "Who painted the Mona Lisa?", answers: ["Picasso", "Michelangelo", "Van Gogh", "Leonardo da Vinci"], correct: 3},
+        {question: "H2O is?", answers: ["Oxygen", "Hydrogen", "Salt", "Water"], correct: 3},
+        {question: "Animals with pouches?", answers: ["Reptiles", "Birds", "Mammals", "Marsupials"], correct: 3},
+        {question: "President before Biden?", answers: ["Obama", "Bush", "Clinton", "Donald Trump"], correct: 3},
+        {question: "Mount Everest is in?", answers: ["India", "China", "Bhutan", "Nepal"], correct: 3},
+        {question: "Largest mammal?", answers: ["Elephant", "Hippo", "Giraffe", "Blue Whale"], correct: 3},
+        {question: "Which sport uses bats?", answers: ["Football", "Tennis", "Golf", "Cricket"], correct: 3},
+        {question: "First man on Moon?", answers: ["Buzz Aldrin", "Yuri Gagarin", "John Glenn", "Neil Armstrong"], correct: 3},
+        {question: "Red planet?", answers: ["Jupiter", "Venus", "Mercury", "Mars"], correct: 3},
+        {question: "Who discovered gravity?", answers: ["Albert Einstein", "Galileo", "Copernicus", "Isaac Newton"], correct: 3},
+        {question: "Capital of Australia?", answers: ["Sydney", "Melbourne", "Perth", "Canberra"], correct: 3},
+        {question: "Which ocean is Bermuda in?", answers: ["Pacific", "Indian", "Southern", "Atlantic"], correct: 3},
+        {question: "What color are penguins?", answers: ["Blue and Grey", "Green and Brown", "Red and Yellow", "Black and White"], correct: 3},
+        {question: "Most widely spoken language?", answers: ["Mandarin", "Spanish", "French", "English"], correct: 3},
+        {question: "Smallest US state?", answers: ["Delaware", "Connecticut", "Hawaii", "Rhode Island"], correct: 3},
+        {question: "Largest desert?", answers: ["Kalahari", "Gobi", "Arabian", "Sahara"], correct: 3},
+        {question: "Tallest animal?", answers: ["Elephant", "Ostrich", "Horse", "Giraffe"], correct: 3},
+        {question: "Which organ pumps blood?", answers: ["Lungs", "Kidney", "Liver", "Heart"], correct: 3},
+        {question: "Fastest bird?", answers: ["Ostrich", "Eagle", "Swan", "Peregrine Falcon"], correct: 3},
+        {question: "Which planet is closest to the Sun?", answers: ["Venus", "Earth", "Mars", "Mercury"], correct: 3},
+        {question: "Which holiday is October 31?", answers: ["Christmas", "Thanksgiving", "Easter", "Halloween"], correct: 3},
+        {question: "Who created Mickey Mouse?", answers: ["Stan Lee", "Jim Henson", "Charles Schulz", "Walt Disney"], correct: 3},
+        {question: "Square root of 81?", answers: ["6", "7", "8", "9"], correct: 3},
+        {question: "Largest ocean?", answers: ["Indian", "Atlantic", "Arctic", "Pacific"], correct: 3},
+        {question: "Human skeleton bones?", answers: ["106", "198", "256", "206"], correct: 3},
+        {question: "Which country is famous for tulips?", answers: ["Belgium", "Denmark", "Norway", "Netherlands"], correct: 3},
+        {question: "First Disney princess?", answers: ["Ariel", "Cinderella", "Belle", "Snow White"], correct: 3},
+        {question: "Instrument with keys, pedals, strings?", answers: ["Guitar", "Drums", "Violin", "Piano"], correct: 3},
+        {question: "How many wheels on a tricycle?", answers: ["1", "2", "4", "3"], correct: 3},
+        {question: "Compass points?", answers: ["Three", "Two", "Six", "Four"], correct: 3},
+        {question: "Can an ostrich fly?", answers: ["Yes", "Rarely", "Only babies", "No"], correct: 3},
+        {question: "What is the freezing point of water?", answers: ["50°C", "-10°C", "100°C", "0°C"], correct: 3},
+        {question: "Sweet food bees make?", answers: ["Butter", "Jam", "Syrup", "Honey"], correct: 3},
+        {question: "Famous Italian city for canals?", answers: ["Rome", "Florence", "Milan", "Venice"], correct: 3},
+        {question: "Sun is a ...?", answers: ["Planet", "Moon", "Comet", "Star"], correct: 3},
+        {question: "Stars and stripes is US ...?", answers: ["Bird", "Anthem", "Tree", "Flag"], correct: 3},
+        {question: "Largest land carnivore?", answers: ["Wolf", "Lion", "Tiger", "Polar Bear"], correct: 3},
+        {question: "Which sport is Wimbledon for?", answers: ["Golf", "Soccer", "Baseball", "Tennis"], correct: 3},
+        {question: "River Thames flows through which city?", answers: ["Liverpool", "Manchester", "Edinburgh", "London"], correct: 3},
+        {question: "Largest continent?", answers: ["Europe", "Africa", "Australia", "Asia"], correct: 3},
+        {question: "Which animal moo?", answers: ["Pig", "Duck", "Sheep", "Cow"], correct: 3},
+        {question: "Polar bears live at the ... Pole?", answers: ["South", "West", "East", "North"], correct: 3},
+        {question: "Who wrote War and Peace?", answers: ["Dostoevsky", "Chekhov", "Turgenev", "Leo Tolstoy"], correct: 3},
+        {question: "Largest organ of the human body?", answers: ["Brain", "Heart", "Kidney", "Skin"], correct: 3},
+        {question: "What color is a lemon?", answers: ["Green", "Orange", "Pink", "Yellow"], correct: 3},
+        {question: "Main gas in Earth's atmosphere?", answers: ["Oxygen", "Carbon Dioxide", "Argon", "Nitrogen"], correct: 3},
+        {question: "What is the hardest natural substance?", answers: ["Gold", "Iron", "Silver", "Diamond"], correct: 3},
+        {question: "Who painted Starry Night?", answers: ["Monet", "Picasso", "Da Vinci", "Vincent van Gogh"], correct: 3},
+        {question: "Which African animal has a long neck?", answers: ["Elephant", "Lion", "Tiger", "Giraffe"], correct: 3},
+        {question: "Where is the Great Barrier Reef?", answers: ["USA", "South Africa", "China", "Australia"], correct: 3},
+        {question: "Queen of England in 2020?", answers: ["Elizabeth I", "Victoria", "Mary", "Elizabeth II"], correct: 3},
+        {question: "How many legs does a spider have?", answers: ["4", "6", "10", "8"], correct: 3},
+        {question: "Which animal can purr and meow?", answers: ["Dog", "Wolf", "Cow", "Cat"], correct: 3},
+        {question: "Color of emerald?", answers: ["Red", "Blue", "Yellow", "Green"], correct: 3},
+        {question: "Giant panda's main food?", answers: ["Grass", "Leaves", "Fruit", "Bamboo"], correct: 3},
+        {question: "Which part of the plant makes food?", answers: ["Root", "Stem", "Flower", "Leaf"], correct: 3},
+        {question: "Which fish can make electricity?", answers: ["Salmon", "Tuna", "Herring", "Electric Eel"], correct: 3},
+        {question: "How many days in a leap year?", answers: ["364", "365", "366", "367"], correct: 2},
+        {question: "Which animal lays eggs?", answers: ["Cat", "Dog", "Elephant", "Chicken"], correct: 3},
+        {question: "Which fruit is used in wine?", answers: ["Apple", "Banana", "Pear", "Grape"], correct: 3},
+        {question: "First element on the periodic table?", answers: ["Helium", "Oxygen", "Carbon", "Hydrogen"], correct: 3},
+        {question: "Football World Cup is held every ... years?", answers: ["2", "3", "6", "4"], correct: 3},
+        {question: "Which city hosts the Colosseum?", answers: ["Athens", "Istanbul", "Madrid", "Rome"], correct: 3},
+        {question: "Where are kangaroos native?", answers: ["Africa", "Asia", "Europe", "Australia"], correct: 3},
+        {question: "Chocolate is made from ...?", answers: ["Corn", "Almond", "Wheat", "Cocoa"], correct: 3},
+        {question: "Which is NOT a primary color?", answers: ["Yellow", "Red", "Blue", "Green"], correct: 3},
+        {question: "Which animal is the symbol of WWF?", answers: ["Lion", "Tiger", "Bear", "Panda"], correct: 3},
+        {question: "What is the main ingredient of bread?", answers: ["Rice", "Oats", "Corn", "Wheat"], correct: 3},
+        {question: "Which place is known for pyramids?", answers: ["Italy", "Greece", "India", "Egypt"], correct: 3},
+        {question: "Which planet has rings?", answers: ["Venus", "Earth", "Mars", "Saturn"], correct: 3},
+        {question: "Which fruit is orange inside?", answers: ["Banana", "Grape", "Plum", "Orange"], correct: 3},
+        {question: "A group of lions is called a ...?", answers: ["Herd", "Flock", "School", "Pride"], correct: 3},
+        {question: "Which bird says 'hoot'?", answers: ["Crow", "Robin", "Canary", "Owl"], correct: 3},
+        {question: "Young frog is called a ...?", answers: ["Kid", "Cub", "Calf", "Tadpole"], correct: 3},
+        {question: "Star sign after Aries?", answers: ["Pisces", "Cancer", "Leo", "Taurus"], correct: 3},
+        {question: "Which is the currency of UK?", answers: ["Euro", "Dollar", "Rupee", "Pound"], correct: 3},
+        {question: "What color are Smurfs?", answers: ["Green", "Yellow", "Pink", "Blue"], correct: 3},
+        {question: "Which is the largest flower?", answers: ["Rose", "Tulip", "Lily", "Rafflesia"], correct: 3},
+      ];
+      // Randomize questions each run
+      function shuffle(arr) {
+        let a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+      const { useState } = React;
+      // --- Components ---
+      function Splash({ onStart }) {
+        return (
+          <div className="splash-page">
+            <div className="splash-msg">juju luvs ya</div>
+            <button className="splash-btn" onClick={onStart}>
+              Enter BOSS PENGUIN
+            </button>
+          </div>
+        );
+      }
+      function Home({ onPlay, onCollection, penguins }) {
+        return (
+          <div className="home-container">
+            <h1>BOSS PENGUIN</h1>
+            <div className="penguin-count">
+              Penguins collected: <b>{penguins}</b>
+            </div>
+            <button className="home-btn play-btn" onClick={onPlay}>
+              Start Trivia
+            </button>
+            <button className="home-btn coll-btn" onClick={onCollection}>
+              View Penguin Collection
+            </button>
+            <h3>Answer general knowledge questions. For each right answer, win a penguin!</h3>
+          </div>
+        );
+      }
+      function RewardPenguin({ onContinue }) {
+        return (
+          <div className="reward-container">
+            <div className="reward-img">
+              <span role="img" aria-label="penguin" style={{ fontSize: "5rem" }}>🐧</span>
+            </div>
+            <div className="reward-msg">You WON a Penguin!</div>
+            <button className="continue-btn" onClick={onContinue}>
+              Continue
+            </button>
+          </div>
+        );
+      }
+      function Collection({ penguins, onBack }) {
+        return (
+          <div className="collection-container">
+            <h2>Your Penguin Collection</h2>
+            <div className="penguins-row">
+              {Array.from({ length: penguins }).map((_, idx) => (
+                <span key={idx} role="img" aria-label="penguin" style={{ fontSize: "2.5rem", margin: "0.2rem" }}>
+                  🐧
+                </span>
+              ))}
+              {penguins === 0 && <div>No penguins yet! Go win some!</div>}
+            </div>
+            <button className="back-btn" onClick={onBack}>
+              Back to Home
+            </button>
+          </div>
+        );
+      }
+      function TriviaGame({ onWinPenguin, onBackHome, shuffledQs }) {
+        const [qIdx, setQIdx] = useState(0);
+        const [selected, setSelected] = useState(null);
+        const [answered, setAnswered] = useState(false);
+        const [showPenguin, setShowPenguin] = useState(false);
+
+        const q = shuffledQs[qIdx];
+
+        function handleAnswer(idx) {
+          setSelected(idx);
+          setAnswered(true);
+          if (idx === q.correct) {
+            setShowPenguin(true);
+            onWinPenguin();
+          }
+        }
+        function nextQuestion() {
+          setShowPenguin(false);
+          setSelected(null);
+          setAnswered(false);
+          setQIdx(qIdx + 1 < shuffledQs.length ? qIdx + 1 : 0);
+        }
+        if (qIdx >= shuffledQs.length) {
+          return (
+            <div className="trivia-container">
+              <h2>Quiz Complete!</h2>
+              <button onClick={onBackHome} className="home-btn">
+                Back to Home
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="trivia-container">
+            <h2 className="trivia-q">{q.question}</h2>
+            <div className="trivia-answers">
+              {q.answers.map((ans, idx) => (
+                <button
+                  key={idx}
+                  className={
+                    "trivia-answer" +
+                    (selected === idx
+                      ? idx === q.correct
+                        ? " correct"
+                        : " incorrect"
+                      : "")
+                  }
+                  disabled={answered}
+                  onClick={() => handleAnswer(idx)}
+                >
+                  {ans}
+                </button>
+              ))}
+            </div>
+            {answered && !showPenguin && (
+              <button className="back-btn" onClick={onBackHome}>
+                Back to Home
+              </button>
+            )}
+            {showPenguin && <RewardPenguin onContinue={nextQuestion} />}
+          </div>
+        );
+      }
+      function App() {
+        const [screen, setScreen] = useState("splash");
+        const [penguins, setPenguins] = useState(0);
+        const [shuffledQs, setShuffledQs] = useState(shuffle(QUESTIONS));
+        function handleStart() { setScreen("home"); }
+        function handlePlay() { setShuffledQs(shuffle(QUESTIONS)); setScreen("trivia"); }
+        function handleCollection() { setScreen("collection"); }
+        function handleWinPenguin() { setPenguins(penguins + 1); }
+        function handleBackHome() { setScreen("home"); }
+        return (
+          <div className="app-bg">
+            {screen === "splash" && <Splash onStart={handleStart} />}
+            {screen === "home" && (
+              <Home onPlay={handlePlay} onCollection={handleCollection} penguins={penguins} />
+            )}
+            {screen === "trivia" && (
+              <TriviaGame onWinPenguin={handleWinPenguin} onBackHome={handleBackHome} shuffledQs={shuffledQs} />
+            )}
+            {screen === "collection" && (
+              <Collection penguins={penguins} onBack={handleBackHome} />
+            )}
+          </div>
+        );
+      }
+      // --- Render React ---
+      ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+    </script>
+  </body>
+</html>
